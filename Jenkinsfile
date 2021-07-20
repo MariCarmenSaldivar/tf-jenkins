@@ -32,5 +32,27 @@ pipeline {
                 }
             }
         }
+        stage('InfraValidate'){
+            steps {
+                dir('awsinfra/networking-template/'){
+                    sh 'terraform validate'
+                }
+            }
+        }
+        stage('InfraPlan'){
+            steps{
+                dir('awsinfra/networking-template/'){
+                    script {
+                        try {
+                            sh "terraform workspace new ${params.WORKSPACE}"
+                        } catch (err){
+                            sh "terraform workspace select ${params.WORKSPACE}"
+                        }
+                        sh "terraform plan -out terraform-networking.tfplan;echo \$? > status"
+                        stash name:"terraform-networking-plan", includes: "terraform-networking.tfplan"
+                    }
+                }
+            }
+        }
     }
 }
