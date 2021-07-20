@@ -25,8 +25,8 @@ pipeline {
     stages {
         stage('Build') {
             steps {
-                git 'https://github.com/MariCarmenSaldivar/tf-jenkins.git'
-                dir('/var/jenkins_home/workspace/network-deploy/awsinfra/networking-template/'){
+                // git 'https://github.com/MariCarmenSaldivar/tf-jenkins.git'
+                dir('awsinfra/networking-template/'){
                     sh 'terraform --version'
                     sh "terraform init --backend-config='path=${params.CONSUL_STATE_PATH}'"
                 }
