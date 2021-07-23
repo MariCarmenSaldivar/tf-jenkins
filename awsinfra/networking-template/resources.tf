@@ -17,7 +17,7 @@ data "aws_availability_zones" "available" {}
 data "consul_keys" "networking" {
   key {
     name = "networking"
-    path = "networking/configuration/globo-primary/net_info"
+    path = terraform.workspace == "default" ? "networking/configuration/globo-primary/net_info" : "networking/configuration/globo-primary/${terraform.workspace}/net_info"
   }
   key {
     name="common_tags"
@@ -30,7 +30,7 @@ data "consul_keys" "networking" {
 locals {
   cidr_block     = jsondecode(data.consul_keys.networking.var.networking)["cidr_block"]
   subnet_count   = jsondecode(data.consul_keys.networking.var.networking)["subnet_count"]
-  common_tags = jsondecode(data.consul_keys.networking.var.common_tags)
+  common_tags = merge({Environment=terraform.workspace},jsondecode(data.consul_keys.networking.var.common_tags))
 
 }
 #Resources
@@ -39,7 +39,7 @@ locals {
 module "vpc" {
   source = "terraform-aws-modules/vpc/aws"
 
-  name = "globo-primary"
+  name = "globo-primary-${terraform.workspace}"
 
   cidr            = local.cidr_block
   azs             = slice(data.aws_availability_zones.available.names, 0, local.subnet_count)
